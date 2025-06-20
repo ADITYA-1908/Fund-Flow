@@ -1,0 +1,665 @@
+openapi: 3.0.3
+info:
+  title: FundFlow API
+  description: |
+    A comprehensive RESTful API for the FundFlow mutual funds platform. 
+    
+    This API provides endpoints for:
+    - User authentication and authorization
+    - Mutual fund management and saving
+    - User data operations
+    
+    ## Authentication
+    
+    Most endpoints require authentication using JWT tokens. Include the token in the Authorization header:
+    
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+    
+    ## Rate Limiting
+    
+    API requests are rate-limited to prevent abuse:
+    - General API endpoints: 100 requests per 15 minutes per IP
+    - Authentication endpoints: 5 requests per minute per IP
+    
+    ## External Data Source
+    
+    Fund data is sourced from [MFAPI.in](https://www.mfapi.in), which provides real-time mutual fund information.
+    
+  version: 1.0.0
+  contact:
+    name: FundFlow Team
+    email: support@fundflow.com
+    url: https://fundflow.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://api.fundflow.com
+    description: Production server
+  - url: https://staging-api.fundflow.com
+    description: Staging server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health Check
+      summary: API Health Check
+      description: Check if the API is running and healthy
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: OK
+                message: Mutual Funds API is running
+                timestamp: '2024-01-15T10:30:00.000Z'
+
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: |
+        Create a new user account with email and password.
+        
+        **Validation Rules:**
+        - Name: 2-50 characters
+        - Email: Valid email format, must be unique
+        - Password: Minimum 6 characters
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              name: John Doe
+              email: john.doe@example.com
+              password: securePassword123
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                message: User registered successfully
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                user:
+                  id: 60f7b3b3b3b3b3b3b3b3b3b3
+                  name: John Doe
+                  email: john.doe@example.com
+        '400':
+          description: Validation error or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Validation Error
+                  value:
+                    message: Validation failed
+                    errors:
+                      - type: field
+                        value: john
+                        msg: Name must be between 2 and 50 characters
+                        path: name
+                        location: body
+                user_exists:
+                  summary: User Already Exists
+                  value:
+                    message: User already exists with this email
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Server error during registration
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: |
+        Authenticate user with email and password.
+        
+        Returns a JWT token valid for 7 days.
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: john.doe@example.com
+              password: securePassword123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                message: Login successful
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                user:
+                  id: 60f7b3b3b3b3b3b3b3b3b3b3
+                  name: John Doe
+                  email: john.doe@example.com
+        '400':
+          description: Invalid credentials or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_credentials:
+                  summary: Invalid Credentials
+                  value:
+                    message: Invalid email or password
+                validation_error:
+                  summary: Validation Error
+                  value:
+                    message: Validation failed
+                    errors:
+                      - type: field
+                        value: invalid-email
+                        msg: Please enter a valid email
+                        path: email
+                        location: body
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Server error during login
+
+  /api/auth/verify:
+    get:
+      tags:
+        - Authentication
+      summary: Verify JWT token
+      description: |
+        Verify the validity of a JWT token and return user information.
+        
+        Use this endpoint to check if a token is still valid and get current user data.
+      operationId: verifyToken
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyResponse'
+              example:
+                message: Token is valid
+                user:
+                  id: 60f7b3b3b3b3b3b3b3b3b3b3
+                  name: John Doe
+                  email: john.doe@example.com
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_token:
+                  summary: No Token Provided
+                  value:
+                    message: Access denied. No token provided.
+                invalid_token:
+                  summary: Invalid Token
+                  value:
+                    message: Invalid token.
+                expired_token:
+                  summary: Expired Token
+                  value:
+                    message: Token expired.
+                user_not_found:
+                  summary: User Not Found
+                  value:
+                    message: Invalid token. User not found.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Server error during token verification
+
+  /api/funds/save:
+    post:
+      tags:
+        - Funds
+      summary: Save a mutual fund
+      description: |
+        Save a mutual fund to the authenticated user's saved funds list.
+        
+        **Requirements:**
+        - User must be authenticated
+        - Fund cannot already be saved by the user
+        - Valid scheme code and name required
+      operationId: saveFund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveFundRequest'
+            example:
+              schemeCode: '120503'
+              schemeName: Aditya Birla Sun Life Frontline Equity Fund - Direct Plan - Growth
+      responses:
+        '201':
+          description: Fund saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveFundResponse'
+              example:
+                message: Fund saved successfully
+                fund:
+                  schemeCode: '120503'
+                  schemeName: Aditya Birla Sun Life Frontline Equity Fund - Direct Plan - Growth
+                  savedAt: '2024-01-15T10:30:00.000Z'
+        '400':
+          description: Validation error or fund already saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                already_saved:
+                  summary: Fund Already Saved
+                  value:
+                    message: Fund is already saved
+                validation_error:
+                  summary: Validation Error
+                  value:
+                    message: Validation failed
+                    errors:
+                      - type: field
+                        value: ''
+                        msg: Scheme code is required
+                        path: schemeCode
+                        location: body
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Access denied. No token provided.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Server error while saving fund
+
+  /api/funds/saved:
+    get:
+      tags:
+        - Funds
+      summary: Get saved funds
+      description: |
+        Retrieve all saved funds for the authenticated user.
+        
+        Returns funds sorted by save date (most recent first).
+      operationId: getSavedFunds
+      responses:
+        '200':
+          description: Saved funds retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavedFund'
+              example:
+                - _id: 60f7b3b3b3b3b3b3b3b3b3b4
+                  schemeCode: '120503'
+                  schemeName: Aditya Birla Sun Life Frontline Equity Fund - Direct Plan - Growth
+                  savedAt: '2024-01-15T10:30:00.000Z'
+                - _id: 60f7b3b3b3b3b3b3b3b3b3b5
+                  schemeCode: '118989'
+                  schemeName: ICICI Prudential Bluechip Fund - Direct Plan - Growth
+                  savedAt: '2024-01-14T15:45:00.000Z'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Access denied. No token provided.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Server error while fetching saved funds
+
+  /api/funds/saved/{schemeCode}:
+    delete:
+      tags:
+        - Funds
+      summary: Remove saved fund
+      description: |
+        Remove a mutual fund from the authenticated user's saved funds list.
+        
+        **Parameters:**
+        - schemeCode: The unique identifier of the fund to remove
+      operationId: removeSavedFund
+      parameters:
+        - name: schemeCode
+          in: path
+          required: true
+          description: The scheme code of the mutual fund to remove
+          schema:
+            type: string
+            example: '120503'
+      responses:
+        '200':
+          description: Fund removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Fund removed successfully
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Access denied. No token provided.
+        '404':
+          description: Saved fund not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Saved fund not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Server error while removing saved fund
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login or registration
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: OK
+          description: Health status of the API
+        message:
+          type: string
+          example: Mutual Funds API is running
+          description: Descriptive message about the API status
+        timestamp:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00.000Z'
+          description: Timestamp of the health check
+      required:
+        - status
+        - message
+        - timestamp
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: John Doe
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+          description: Valid email address
+        password:
+          type: string
+          minLength: 6
+          example: securePassword123
+          description: Password with minimum 6 characters
+      required:
+        - name
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+          description: User's email address
+        password:
+          type: string
+          example: securePassword123
+          description: User's password
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Login successful
+          description: Success message
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          description: JWT token for authentication
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - message
+        - token
+        - user
+
+    VerifyResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Token is valid
+          description: Verification success message
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - message
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 60f7b3b3b3b3b3b3b3b3b3b3
+          description: Unique user identifier
+        name:
+          type: string
+          example: John Doe
+          description: User's full name
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+          description: User's email address
+      required:
+        - id
+        - name
+        - email
+
+    SaveFundRequest:
+      type: object
+      properties:
+        schemeCode:
+          type: string
+          example: '120503'
+          description: Unique scheme code of the mutual fund
+        schemeName:
+          type: string
+          example: Aditya Birla Sun Life Frontline Equity Fund - Direct Plan - Growth
+          description: Full name of the mutual fund scheme
+      required:
+        - schemeCode
+        - schemeName
+
+    SaveFundResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Fund saved successfully
+          description: Success message
+        fund:
+          $ref: '#/components/schemas/SavedFund'
+      required:
+        - message
+        - fund
+
+    SavedFund:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 60f7b3b3b3b3b3b3b3b3b3b4
+          description: Unique identifier for the saved fund entry
+        schemeCode:
+          type: string
+          example: '120503'
+          description: Unique scheme code of the mutual fund
+        schemeName:
+          type: string
+          example: Aditya Birla Sun Life Frontline Equity Fund - Direct Plan - Growth
+          description: Full name of the mutual fund scheme
+        savedAt:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00.000Z'
+          description: Timestamp when the fund was saved
+      required:
+        - _id
+        - schemeCode
+        - schemeName
+        - savedAt
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operation completed successfully
+          description: Response message
+      required:
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: An error occurred
+          description: Error message describing what went wrong
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          description: Array of validation errors (optional)
+      required:
+        - message
+
+    ValidationError:
+      type: object
+      properties:
+        type:
+          type: string
+          example: field
+          description: Type of validation error
+        value:
+          type: string
+          example: invalid-value
+          description: The invalid value that caused the error
+        msg:
+          type: string
+          example: Field is required
+          description: Human-readable error message
+        path:
+          type: string
+          example: email
+          description: Field path that caused the error
+        location:
+          type: string
+          example: body
+          description: Location of the error (body, query, params, etc.)
+      required:
+        - type
+        - msg
+        - path
+        - location
+
+tags:
+  - name: Health Check
+    description: API health and status endpoints
+  - name: Authentication
+    description: User authentication and authorization endpoints
+  - name: Funds
+    description: Mutual fund management endpoints

@@ -1,0 +1,60 @@
+import { Toaster } from "react-hot-toast";
+import { Navigate, Route, Routes } from "react-router-dom";
+import Footer from "./components/Footer";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Dashboard from "./pages/Dashboard";
+import FundDetails from "./pages/FundDetails";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import SavedFunds from "./pages/SavedFunds";
+function AppContent() {
+  const { user } = useAuth();
+
+  return (
+    <>
+      <Navbar />
+      <main className="pt-16">
+        <Routes>
+          <Route path="/" element={user ? <Home /> : <Dashboard />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/fund/:schemeCode" element={<FundDetails />} />
+          <Route
+            path="/saved-funds"
+            element={
+              <ProtectedRoute>
+                <SavedFunds />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Toaster position="top-right" />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        <AppContent />
+      </div>
+    </AuthProvider>
+  );
+}
+
+export default App;
