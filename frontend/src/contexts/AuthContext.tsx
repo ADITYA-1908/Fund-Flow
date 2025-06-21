@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, {
   createContext,
   ReactNode,
@@ -5,9 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-
 import toast from "react-hot-toast";
-import axios from "../lib/axios"; // ✅ Use custom axios instance
 
 interface User {
   id: string;
@@ -27,7 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
@@ -41,10 +40,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Set up axios defaults
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // Verify token and get user info
       verifyToken();
     } else {
       setLoading(false);
