@@ -26,4 +26,4 @@ dist-ssr
 
 # Environment and Markdown files
 .env
-*.md
+
