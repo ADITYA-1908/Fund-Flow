@@ -10,8 +10,17 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import SavedFunds from "./pages/SavedFunds";
+
 function AppContent() {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <p className="text-lg text-gray-700">Checking authentication...</p>
+      </div>
+    );
+  }
 
   return (
     <>
