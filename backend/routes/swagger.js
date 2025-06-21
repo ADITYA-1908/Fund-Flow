@@ -24,7 +24,7 @@ const swaggerOptions = {
         url:
           process.env.NODE_ENV === "production"
             ? "https://api.fundflow.com"
-            : "http://localhost:5000",
+            : "https://fund-flow-backend.onrender.com",
         description:
           process.env.NODE_ENV === "production"
             ? "Production server"
@@ -61,7 +61,7 @@ try {
       url:
         process.env.NODE_ENV === "production"
           ? "https://api.fundflow.com"
-          : "http://localhost:5000",
+          : "https://fund-flow-backend.onrender.com",
       description:
         process.env.NODE_ENV === "production"
           ? "Production server"

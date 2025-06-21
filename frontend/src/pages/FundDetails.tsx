@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   ArrowLeft,
   Bookmark,
@@ -7,6 +6,8 @@ import {
   DollarSign,
   TrendingUp,
 } from "lucide-react";
+import axios from "../lib/axios";
+
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
@@ -45,6 +46,8 @@ const FundDetails: React.FC = () => {
       }
     }
   }, [schemeCode, user]);
+  const BASE_URL =
+    "https://fund-flow-backend.onrender.com" || "http://localhost:3000";
 
  const BASE_URL = "https://fund-flow-backend.onrender.com";
 
@@ -54,7 +57,6 @@ const FundDetails: React.FC = () => {
         `${BASE_URL}/api/proxy/mf/${schemeCode}`
       );
 
-      // const response = await axios.get(`https://api.mfapi.in/mf/${schemeCode}`);
       const { meta, data } = response.data;
 
       setFundData({

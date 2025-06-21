@@ -3,7 +3,7 @@ import axios from "axios";
 
 const router = express.Router();
 
-// ✅ Fund details by schemeCode
+// Fund details by schemeCode
 router.get("/mf/:schemeCode", async (req, res) => {
   try {
     const response = await axios.get(
@@ -16,7 +16,7 @@ router.get("/mf/:schemeCode", async (req, res) => {
   }
 });
 
-// ✅ Search mutual funds
+//  Search mutual funds
 router.get("/search", async (req, res) => {
   const query = req.query.q;
   if (!query) {

@@ -1,25 +1,13 @@
 import { BarChart3, Search, Shield } from "lucide-react";
 import React from "react";
-// import { useAuth } from "../contexts/AuthContext";
 
 const Dashboard: React.FC = () => {
-//   const { user } = useAuth();
+
 
   return (
     <div className="min-h-screen py-16 px-6 bg-gradient-to-br from-gray-50 to-blue-100">
       <div className="max-w-6xl mx-auto text-center">
-        {/* Auth Greeting
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Dashboard
-        </h1>
-        {user ? (
-          <p className="text-lg text-gray-700 mb-12">
-            Welcome back, <span className="font-semibold">{user.email}</span>!
-          </p>
-        ) : (
-          <p className="text-lg text-gray-700 mb-12">You're not logged in.</p>
-        )} */}
-
+  
         {/* Description Block */}
         <div className="animate-fade-in mb-16">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">

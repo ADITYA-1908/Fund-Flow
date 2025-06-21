@@ -150,17 +150,6 @@ curl -X GET http://localhost:5000/api/funds/saved \
 
 ## Deployment
 
-### Environment Variables
-
-Required environment variables for deployment:
-
-```env
-NODE_ENV=production
-PORT=5000
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fundflow
-JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
-FRONTEND_URL=https://your-frontend-domain.com
-```
 
 ### Health Monitoring
 
