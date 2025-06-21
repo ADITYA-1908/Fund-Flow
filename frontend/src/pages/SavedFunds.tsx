@@ -1,7 +1,8 @@
 import axios from "axios";
-import { Bookmark } from "lucide-react";
+import { ArrowLeft, Bookmark } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import FundCard from "../components/FundCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 
@@ -15,7 +16,7 @@ interface SavedFund {
 const SavedFunds: React.FC = () => {
   const [savedFunds, setSavedFunds] = useState<SavedFund[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
   useEffect(() => {
     fetchSavedFunds();
   }, []);
@@ -57,6 +58,13 @@ const SavedFunds: React.FC = () => {
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 animate-fade-in">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back</span>
+          </button>
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
             <Bookmark className="h-8 w-8 text-primary-600" />
           </div>

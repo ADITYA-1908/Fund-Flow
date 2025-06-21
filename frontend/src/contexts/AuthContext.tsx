@@ -1,4 +1,3 @@
-
 // import axios from "axios";
 // import React, {
 //   createContext,
@@ -53,9 +52,9 @@
 
 //   const verifyToken = async () => {
 //     try {
-//       const response = await axios.get("/api/auth/verify");
-//       setUser(response.data.user);
-//     } catch (error) {
+//       const res = await axios.get("/api/auth/verify");
+//       setUser(res.data.user);
+//     } catch (err) {
 //       localStorage.removeItem("token");
 //       delete axios.defaults.headers.common["Authorization"];
 //       setUser(null);
@@ -66,17 +65,15 @@
 
 //   const login = async (email: string, password: string): Promise<boolean> => {
 //     try {
-//       const response = await axios.post("/api/auth/login", { email, password });
-//       const { token, user } = response.data;
-
+//       const res = await axios.post("/api/auth/login", { email, password });
+//       const { token, user } = res.data;
 //       localStorage.setItem("token", token);
 //       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 //       setUser(user);
-
 //       toast.success("Login successful!");
 //       return true;
-//     } catch (error: any) {
-//       toast.error(error.response?.data?.message || "Login failed");
+//     } catch (err: any) {
+//       toast.error(err.response?.data?.message || "Login failed");
 //       return false;
 //     }
 //   };
@@ -87,21 +84,15 @@
 //     password: string
 //   ): Promise<boolean> => {
 //     try {
-//       const response = await axios.post("/api/auth/register", {
-//         name,
-//         email,
-//         password,
-//       });
-//       const { token, user } = response.data;
-
+//       const res = await axios.post("/api/auth/register", { name, email, password });
+//       const { token, user } = res.data;
 //       localStorage.setItem("token", token);
 //       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 //       setUser(user);
-
 //       toast.success("Registration successful!");
 //       return true;
-//     } catch (error: any) {
-//       toast.error(error.response?.data?.message || "Registration failed");
+//     } catch (err: any) {
+//       toast.error(err.response?.data?.message || "Registration failed");
 //       return false;
 //     }
 //   };
@@ -122,17 +113,14 @@
 //   );
 // };
 
-
-// src/contexts/AuthContext.tsx
-
-import axios from "axios";
 import React, {
   createContext,
-  ReactNode,
   useContext,
-  useEffect,
   useState,
+  useEffect,
+  ReactNode,
 } from "react";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 interface User {
@@ -146,14 +134,14 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  authLoading: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
@@ -165,43 +153,86 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
+  // Configure axios base URL based on environment
   useEffect(() => {
+    const baseURL =
+      import.meta.env.VITE_API_URL ||
+      (import.meta.env.PROD
+        ? "https://fund-flow-backend.onrender.com"
+        : "http://localhost:5000");
+
+    axios.defaults.baseURL = baseURL;
+
+    // Set up request interceptor for auth token
     const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       verifyToken();
     } else {
-      setAuthLoading(false);
+      setLoading(false);
     }
+
+    // Add response interceptor to handle token expiration
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem("token");
+          delete axios.defaults.headers.common["Authorization"];
+          setUser(null);
+          toast.error("Session expired. Please login again.");
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, []);
 
   const verifyToken = async () => {
     try {
-      const res = await axios.get("/api/auth/verify");
-      setUser(res.data.user);
-    } catch (err) {
+      const response = await axios.get("/api/auth/verify");
+      setUser(response.data.user);
+    } catch (error: any) {
+      console.error("Token verification failed:", error);
       localStorage.removeItem("token");
       delete axios.defaults.headers.common["Authorization"];
       setUser(null);
     } finally {
-      setAuthLoading(false);
+      setLoading(false);
     }
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await axios.post("/api/auth/login", { email, password });
-      const { token, user } = res.data;
+      setLoading(true);
+      const response = await axios.post("/api/auth/login", { email, password });
+      const { token, user: userData } = response.data;
+
+      // Store token and set up axios headers
       localStorage.setItem("token", token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      setUser(user);
+
+      // Set user data
+      setUser(userData);
+
       toast.success("Login successful!");
       return true;
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Login failed");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Login failed. Please try again.";
+      toast.error(errorMessage);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -211,16 +242,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string
   ): Promise<boolean> => {
     try {
-      const res = await axios.post("/api/auth/register", { name, email, password });
-      const { token, user } = res.data;
+      setLoading(true);
+      const response = await axios.post("/api/auth/register", {
+        name,
+        email,
+        password,
+      });
+      const { token, user: userData } = response.data;
+
+      // Store token and set up axios headers
       localStorage.setItem("token", token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      setUser(user);
+
+      // Set user data
+      setUser(userData);
+
       toast.success("Registration successful!");
       return true;
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Registration failed");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Registration failed. Please try again.";
+      toast.error(errorMessage);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -231,11 +279,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     toast.success("Logged out successfully");
   };
 
-  return (
-    <AuthContext.Provider
-      value={{ user, login, register, logout, authLoading }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user,
+    login,
+    register,
+    logout,
+    loading,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
