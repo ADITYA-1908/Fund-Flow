@@ -28,7 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       localStorage.removeItem("token");
       delete axios.defaults.headers.common["Authorization"];
+      setUser(null);
     } finally {
       setAuthLoading(false);
     }
@@ -113,13 +114,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     toast.success("Logged out successfully");
   };
 
-  const value = {
-    user,
-    login,
-    register,
-    logout,
-    authLoading,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{ user, login, register, logout, authLoading }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import { Toaster } from "react-hot-toast";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Footer from "./components/Footer";
@@ -27,10 +29,20 @@ function AppContent() {
       <Navbar />
       <main className="pt-16">
         <Routes>
+          {/* ✅ Fix root logic: show Dashboard only for unauthenticated users */}
           <Route path="/" element={user ? <Home /> : <Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/" /> : <Register />}
+          />
+
           <Route path="/fund/:schemeCode" element={<FundDetails />} />
+
           <Route
             path="/saved-funds"
             element={
