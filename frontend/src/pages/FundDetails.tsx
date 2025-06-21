@@ -46,16 +46,14 @@ const FundDetails: React.FC = () => {
       }
     }
   }, [schemeCode, user]);
-  const BASE_URL =
-    "https://fund-flow-backend.onrender.com" || "http://localhost:3000";
+  // const BASE_URL =
+  // "https://fund-flow-backend.onrender.com" || "http://localhost:3000";
 
- const BASE_URL = "https://fund-flow-backend.onrender.com";
+  //  const BASE_URL = "https://fund-flow-backend.onrender.com";
 
   const fetchFundData = async () => {
     try {
-      const response = await axios.get(
-        `${BASE_URL}/api/proxy/mf/${schemeCode}`
-      );
+      const response = await axios.get(`/api/proxy/mf/${schemeCode}`);
 
       const { meta, data } = response.data;
 
