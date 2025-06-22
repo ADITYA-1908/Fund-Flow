@@ -142,16 +142,4 @@ FRONTEND_URL=https://your-frontend-url.com
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **MFAPI.in** for providing mutual fund data
-- **MongoDB Atlas** for database hosting
-- **Tailwind CSS** for the utility-first CSS framework
-- **React Team** for the amazing frontend library
-- **Express.js** for the robust backend framework
-
-## 📞 Support
-
-**Built with ❤️ for the investment community**
-
 **Happy Investing! 📈**
