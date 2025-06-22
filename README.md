@@ -1,6 +1,6 @@
 # FundFlow - Mutual Funds Platform
 
-A comprehensive fullstack web application for discovering, analyzing, and managing mutual funds with real-time data from the MFAPI. Built with modern technologies and designed for production deployment with CI/CD pipelines.
+A comprehensive fullstack web application for discovering, analyzing, and managing mutual funds with real-time data from the MFAPI. Built with modern technologies and designed for production deployment.
 
 ## 🚀 Features
 
