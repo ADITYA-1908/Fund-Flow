@@ -121,86 +121,12 @@ DELETE /api/funds/saved/:schemeCode # Remove saved fund
 GET /api/health             # API health check
 ```
 
-### Request/Response Examples
-
-## 🚀 CI/CD Pipeline Setup
-
-### GitHub Actions Workflows
-
-#### Frontend Deployment Pipeline
-
-````yaml
-# .github/workflows/frontend-deploy.yml
-
-#### Backend Deployment Pipeline
-
-```yaml
-# .github/workflows/backend-deploy.yml
-
-### Docker Configuration
-
-#### Frontend Dockerfile
-
-```dockerfile
-# Dockerfile.frontend
-
-#### Backend Dockerfile
-
-```dockerfile
-# Dockerfile.backend
-#### Docker Compose
-
-```yaml
-# docker-compose.yml
-
-### Deployment Platforms
-
-#### Frontend Deployment Options
-
-1. **Netlify** (Recommended)
-
-   - Automatic deployments from Git
-   - Built-in CDN and SSL
-   - Environment variables support
-
-2. **Vercel**
-
-   - Zero-configuration deployments
-   - Automatic HTTPS
-   - Preview deployments for PRs
-
-3. **AWS S3 + CloudFront**
-   - Scalable static hosting
-   - Global CDN distribution
-   - Custom domain support
-
-#### Backend Deployment Options
-
-1. **Railway** (Recommended)
-
-   - Easy Node.js deployments
-   - Automatic scaling
-   - Built-in monitoring
-
-2. **Render**
-
-   - Free tier available
-   - Automatic deployments
-   - Environment variables
-
-3. **AWS ECS/Fargate**
-   - Container-based deployment
-   - Auto-scaling capabilities
-   - Production-grade infrastructure
-
-### Environment Variables for Production
-
 #### Frontend Environment Variables
 
 ```env
 VITE_API_URL=https://your-backend-url.com
 VITE_APP_NAME=FundFlow
-````
+```
 
 #### Backend Environment Variables
 
@@ -210,109 +136,6 @@ PORT=5000
 MONGODB_URI=mongodb+srv://...
 JWT_SECRET=your-production-jwt-secret
 FRONTEND_URL=https://your-frontend-url.com
-```
-
-### CI/CD Best Practices
-
-1. **Automated Testing**: Run tests on every PR
-2. **Environment Separation**: Different configs for dev/staging/prod
-3. **Secret Management**: Use platform secret managers
-4. **Rollback Strategy**: Keep previous deployments for quick rollbacks
-5. **Monitoring**: Set up error tracking and performance monitoring
-6. **Security Scanning**: Automated vulnerability checks
-7. **Code Quality**: ESLint, Prettier, and code coverage checks
-
-## 🔧 Development Scripts
-
-```bash
-# Root level commands
-npm run dev              # Start both frontend and backend
-npm run install:all      # Install all dependencies
-npm run build           # Build both applications
-npm run test            # Run all tests
-
-# Frontend specific
-npm run frontend:dev     # Start frontend dev server
-npm run frontend:build   # Build frontend for production
-npm run frontend:test    # Run frontend tests
-
-# Backend specific
-npm run backend:dev      # Start backend dev server
-npm run backend:start    # Start backend in production mode
-npm run backend:test     # Run backend tests
-
-# Docker commands
-docker-compose up        # Start all services with Docker
-docker-compose down      # Stop all services
-docker-compose build     # Rebuild Docker images
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **MongoDB Connection Error**
-
-   ```
-   Error: MongoNetworkError
-   ```
-
-   - Verify connection string format
-   - Check network access settings in MongoDB Atlas
-   - Ensure correct username/password
-
-2. **JWT Token Issues**
-
-   ```
-   Error: JsonWebTokenError
-   ```
-
-   - Verify JWT_SECRET is set and secure (32+ characters)
-   - Check token expiration settings
-   - Ensure proper token format in requests
-
-3. **CORS Errors**
-
-   ```
-   Error: Access to fetch blocked by CORS policy
-   ```
-
-   - Verify FRONTEND_URL in backend .env
-   - Check CORS configuration in server.js
-   - Ensure proper headers in requests
-
-4. **Build Failures**
-
-   ```
-   Error: Module not found
-   ```
-
-   - Run `npm install` in both frontend and backend
-   - Check import paths and file names
-   - Verify TypeScript configurations
-
-5. **API Not Loading**
-   ```
-   Error: Network Error
-   ```
-   - Ensure both frontend and backend are running
-   - Check proxy configuration in vite.config.ts
-   - Verify API endpoints and ports
-
-### Debug Commands
-
-```bash
-# Check running processes
-npm run ps
-
-# View logs
-npm run logs
-
-# Test API endpoints
-curl http://localhost:5000/api/health
-
-# Check database connection
-npm run db:test
 ```
 
 ## 📄 License
